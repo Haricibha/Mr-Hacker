@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location Tracker Demo</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #f0f0f0; }
+        button { padding: 10px 20px; font-size: 16px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>Location Tracker Demo (Educational Only)</h1>
+    <p>Click below to share your location. Data logs for learning privacy risks.</p>
+    <button onclick="getLocation()">Get My Location</button>
+    <p id="status"></p>
+
+    <script>
+        function getLocation() {
+            const status = document.getElementById('status');
+            if (navigator.geolocation) {
+                status.textContent = 'Requesting location...';
+                navigator.geolocation.getCurrentPosition(sendPosition, showError);
+            } else {
+                status.textContent = 'Geolocation not supported by this browser.';
+            }
+        }
+
+        function sendPosition(position) {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            const accuracy = position.coords.accuracy;
+
+            const data = {
+                lat: lat,
+                lon: lon,
+                acc: accuracy,
+                ip: 'client-side',  // Netlify can get real IP in function
+                ua: navigator.userAgent
+            };
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/.netlify/functions/log', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    document.getElementById('status').textContent = 'Location logged! Redirecting to map...';
+                    setTimeout(() => {
+                        window.location.href = `https://www.google.com/maps?q=\( {lat}, \){lon}`;
+                    }, 1000);
+                }
+            };
+            xhr.send(JSON.stringify(data));
+        }
+
+        function showError(error) {
+            let message = '';
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    message = 'Location access denied.';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    message = 'Location info unavailable.';
+                    break;
+                case error.TIMEOUT:
+                    message = 'Location request timed out.';
+                    break;
+                default:
+                    message = 'Unknown error.';
+            }
+            document.getElementById('status').textContent = message;
+        }
+    </script>
+</body>
+</html>
