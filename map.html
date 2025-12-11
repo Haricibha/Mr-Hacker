@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+        #map { height: 500px; width: 100%; border: 1px solid #ccc; }
+        h1 { text-align: center; }
+    </style>
+</head>
+<body>
+    <h1>Logged Locations Map (Demo Data)</h1>
+    <p>Markers show tracked spots. (Logs viewable in Netlify dashboard.)</p>
+    <div id="map"></div>
+
+    <script>
+        // For demo: Hardcode sample logs or fetch from external (e.g., JSONBin). In prod, use a DB.
+        const sampleLogs = [
+            { lat: 37.7749, lon: -122.4194, popup: 'Sample: San Francisco | Acc: 100m | Time: Now' },
+            // Add more or fetch: fetch('/.netlify/functions/get-logs').then(...)
+        ];
+
+        const map = L.map('map').setView([0, 0], 2);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        sampleLogs.forEach(log => {
+            L.marker([log.lat, log.lon]).addTo(map).bindPopup(log.popup);
+        });
+
+        // Optional: Auto-fit to markers
+        if (sampleLogs.length > 0) {
+            const group = new L.featureGroup(sampleLogs.map(l => L.marker([l.lat, l.lon])));
+            map.fitBounds(group.getBounds());
+        }
+    </script>
+</body>
+</html>
